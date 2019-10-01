@@ -208,7 +208,7 @@ def is_different_modulo_images(diff):
 def compare_uat_and_library_manifests(b_number):
     # Start by fetching the manifests from the UAT and library site.
     uat_manifest = requests.get(
-        f"https://library-uat.wellcomelibrary.org/iiif/{b_number}/manifest"
+        f"http://library-uat.wellcomelibrary.org/iiif/{b_number}/manifest"
     ).json()
 
     prod_manifest = requests.get(
