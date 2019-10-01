@@ -6,7 +6,6 @@ import os
 import re
 import sys
 import tempfile
-from urllib.request import urlretrieve
 
 import hyperlink
 import imagehash
@@ -19,6 +18,12 @@ from unidecode import unidecode
 
 # Monkey-patch to ensure we don't get truncated URLs in results
 sys.modules["recursive_diff.recursive_diff"]._str_trunc = str
+
+sess = requests.Session()
+
+# Get the cookie that lets us do authenticated downloads
+resp = sess.get("https://dlcs.io/auth/2/clickthrough")
+resp.raise_for_status()
 
 
 def slugify(u):
@@ -39,9 +44,15 @@ def download_image(url, out_path):
     tmp_path = tempfile.mktemp()
 
     try:
-        urlretrieve(str(url), tmp_path)
-    except Exception:
-        print("Error trying to retrieve %s" % url, file=sys.stderr)
+        with sess.get(url, stream=True) as r:
+            r.raise_for_status()
+            with open(tmp_path, 'wb') as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    if chunk: # filter out keep-alive new chunks
+                        f.write(chunk)
+
+    except Exception as err:
+        print("Error trying to retrieve %s (%r)" % (url, err), file=sys.stderr)
         raise
 
     os.rename(tmp_path, out_path)
