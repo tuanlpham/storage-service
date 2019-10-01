@@ -205,7 +205,7 @@ def is_different_modulo_images(diff):
     assert 0
 
 
-def compare_uat_and_library_manifests(b_number):
+def do_uat_and_library_manifests_have_differences(b_number):
     # Start by fetching the manifests from the UAT and library site.
     uat_manifest = requests.get(
         f"http://library-uat.wellcomelibrary.org/iiif/{b_number}/manifest"
@@ -229,9 +229,9 @@ def compare_uat_and_library_manifests(b_number):
 
 if __name__ == "__main__":
     try:
-        if compare_uat_and_library_manifests(sys.argv[1]):
-            print("Manifests match!", file=sys.stderr)
-        else:
+        if do_uat_and_library_manifests_have_differences(sys.argv[1]):
             print("Manifests differ!", file=sys.stderr)
+        else:
+            print("Manifests match!", file=sys.stderr)
     except IndexError:
         sys.exit(f"Usage: {__file__} <B_NUMBER>")
