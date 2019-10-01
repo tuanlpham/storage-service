@@ -7,6 +7,7 @@ import re
 import sys
 import tempfile
 
+import bs4
 import hyperlink
 import imagehash
 from PIL import Image
@@ -136,7 +137,7 @@ def are_these_urls_the_same_image(url1, url2):
     diff = imagehash.average_hash(im1) - imagehash.average_hash(im2)
     if diff > 5:
         print("image diff is %d" % diff)
-    return diff <= 2
+    return diff <= 5
 
 
 @pytest.mark.parametrize(
@@ -165,26 +166,28 @@ def is_different_modulo_images(diff):
     #
     # because URLs are expected to differ in certain ways!  So filter them out
     # from the list.
-    m = re.search(
-        r"^[\[a-zA-Z0-9@\]@]+: (?P<url1>[a-zA-Z0-9:/\-\._!,?=]+) != (?P<url2>[a-zA-Z0-9:/\-\._!,?=]+)",
-        diff,
-    )
+    assert diff.count(" != ") == 1, diff
+    label, diff_body = diff.split(": ", 1)
+    url1, url2 = diff_body.strip().split(" != ")
 
-    if m is None:
-        if "https" in diff:
-            print("Why wasn't this matched?")
-            print(diff)
-            assert 0
-        return True
-
-    url1 = m.group("url1")
-    url2 = m.group("url2")
+    # For example:
+    #
+    #   <img src='https://library-uat.wellcomelibrary.org/biblio
+    #
+    if url1.startswith("<img src='https://library-uat.wellcomelibrary.org/"):
+        url1 = url1.replace(
+            "https://library-uat.wellcomelibrary.org/",
+            "https://wellcomelibrary.org/"
+        )
+        return url1 != url2
 
     # For example:
     #
     #   [label]: None != My title
     #
-    if "http" not in url1 or "http" not in url2:
+    #   <img src="http://example.org">
+    #
+    if not (url1.startswith("http") and url2.startswith("http")):
         return True
 
     # For example:
