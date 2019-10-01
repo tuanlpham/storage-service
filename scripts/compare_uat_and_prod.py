@@ -171,6 +171,13 @@ def is_different_modulo_images(diff):
 
     # For example:
     #
+    #   [label]: None != My title
+    #
+    if "http" not in url1 or "http" not in url2:
+        return True
+
+    # For example:
+    #
     #   [@id]:
     #   https://library-uat.wellcomelibrary.org/iiif/b30145004/manifest !=
     #   https://wellcomelibrary.org/iiif/b30145004/manifest
