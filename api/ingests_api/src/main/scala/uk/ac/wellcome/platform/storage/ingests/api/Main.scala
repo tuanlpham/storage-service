@@ -7,7 +7,11 @@ import akka.stream.ActorMaterializer
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB
 import com.amazonaws.services.sns.AmazonSNS
 import com.typesafe.config.Config
-import uk.ac.wellcome.messaging.sns.{SNSClientFactory, SNSConfig, SNSMessageSender}
+import uk.ac.wellcome.messaging.sns.{
+  SNSClientFactory,
+  SNSConfig,
+  SNSMessageSender
+}
 import uk.ac.wellcome.messaging.typesafe.SNSBuilder
 import uk.ac.wellcome.monitoring.typesafe.MetricsBuilder
 import uk.ac.wellcome.platform.archive.common.config.builders.HTTPServerBuilder
@@ -58,12 +62,11 @@ object Main extends WellcomeTypesafeApp {
 
     val ingestStarterMain = new IngestStarter[SNSConfig](
       ingestTracker = ingestTrackerMain,
-      unpackerMessageSender =
-        new SNSMessageSender(
-          snsClient = snsClient,
-          snsConfig = SNSBuilder.buildSNSConfig(config, namespace = "unpacker"),
-          subject = "Sent from the ingests API"
-        )
+      unpackerMessageSender = new SNSMessageSender(
+        snsClient = snsClient,
+        snsConfig = SNSBuilder.buildSNSConfig(config, namespace = "unpacker"),
+        subject = "Sent from the ingests API"
+      )
     )
 
     val httpServerConfigMain = HTTPServerBuilder.buildHTTPServerConfig(config)
